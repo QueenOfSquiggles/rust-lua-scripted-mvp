@@ -1,0 +1,8 @@
+[package]
+name = "lua_scripted_game"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+mlua-extras = { version = "0.0.5", features = ["derive", "lua54", "mlua", "serialize"] }
+serde = "1.0.216"
