@@ -1,8 +1,16 @@
+[workspace]
+members = ["mlua-extras"]
+
 [package]
 name = "lua_scripted_game"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-mlua-extras = { version = "0.0.5", features = ["derive", "lua54", "mlua", "serialize"] }
+mlua-extras = { features = [
+    "derive",
+    "lua54",
+    "serialize",
+], path = "./mlua-extras/" }
+
 serde = "1.0.216"
