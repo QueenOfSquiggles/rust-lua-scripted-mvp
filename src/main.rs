@@ -143,6 +143,13 @@ impl TypedUserData for RpgCharacter {
                 a.document("This function provides some kind of testing for the character");
             },
         );
+
+        // Note that this does require an instance of RpgCharacter since Lua has no actual knowledge of classes, let along `RpgCharacter` specifically
+        methods.document("Constructor");
+        methods.add_function("new", |_, p: (String,)| {
+            Ok(RpgCharacter {name: p.0})
+        });
+
         methods.add_meta_method(LuaMetaMethod::ToString, |_, b, _: Value| {
             Ok(format!("{b:?}"))
         });

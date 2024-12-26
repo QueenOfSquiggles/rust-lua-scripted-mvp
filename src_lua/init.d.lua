@@ -12,6 +12,10 @@ rpg = {
 --- @class RpgCharacter
 --- @field name string
 local _CLASS_RpgCharacter_ = {
+  --- Constructor
+  --- @param param0 string 
+  --- @return RpgCharacter 
+  new = function(param0) end,
   --- Provides the current character's attack
   --- @param self RpgCharacter
   --- @return number 
