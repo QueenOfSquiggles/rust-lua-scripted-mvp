@@ -1,4 +1,5 @@
 use std::{
+    borrow::Cow,
     env,
     fs::{DirBuilder, File},
     io::Read,
@@ -8,8 +9,8 @@ use mlua_extras::{
     extras::Module,
     mlua::{self, prelude::*, Value},
     typed::{
-        generator::{Definition, DefinitionFileGenerator, Definitions},
-        Type, TypedModule, TypedUserData,
+        generator::{Definition, DefinitionFileGenerator, Definitions, FunctionBuilder},
+        IntoDocComment, Type, TypedModule, TypedMultiValue, TypedUserData,
     },
     Typed, UserData,
 };
@@ -117,6 +118,22 @@ impl TypedUserData for RpgCharacter {
         methods.document("Provides the current character's attack");
         methods.add_method("get_attack", |_ctx, _this, _p: ()| Ok(1.0));
 
+        methods.document("Testing many parameters");
+        methods.add_method_with(
+            "long_method",
+            |_, _, _: (f32, bool, String, i32, [f32; 3])| Ok(""),
+            |doc: &mut FunctionBuilder<_, &str>| {
+                document_params(doc, vec![
+                    ("float_value", Type::number(), "A cute little float number"),
+                    ("truth", Type::boolean(), "Is this true? Maybe maybe not"),
+                    ("fun_text", Type::string(), "What fun. What will you write??"),
+                    ("second_number", Type::integer(), "This one's an integer!!!"),
+                    ("a_vector", Type::tuple([Type::number(), Type::number(), Type::number()]), "Even a tuple can be fun!"),                
+                ]);
+            },
+        );
+        // Type::integer()
+
         methods.document("A testing function to explore various options of API systems");
         methods.add_method_with(
             "test",
@@ -138,6 +155,38 @@ impl TypedUserData for RpgCharacter {
 
 fn create_rpg_character(_ctx: &Lua, name: String) -> mlua_extras::mlua::Result<RpgCharacter> {
     Ok(RpgCharacter { name })
+}
+
+fn document_params<Params, Return, N, D>(
+    func_doc: &mut FunctionBuilder<Params, Return>,
+    doc_data: Vec<(N, Type, D)>,
+) where
+    Params: TypedMultiValue,
+    Return: TypedMultiValue,
+    N: Into<Cow<'static, str>> + Clone,
+    D: IntoDocComment + Clone,
+{
+    // Might want to contribute some kind of helper like this back to mlua-extras crate
+    for (index, (name, ptype, doc)) in doc_data.iter().enumerate() {
+        full_param_doc(func_doc, index, name.clone(), ptype.clone(), doc.clone());
+    }
+}
+
+fn full_param_doc<Params, Return, N, D>(
+    func_doc: &mut FunctionBuilder<Params, Return>,
+    index: usize,
+    name: N,
+    ptype: Type,
+    doc: D,
+) where
+    Params: TypedMultiValue,
+    Return: TypedMultiValue,
+    N: Into<Cow<'static, str>> + Clone,
+    D: IntoDocComment + Clone,
+{
+    func_doc.param(index, move |pdoc| {
+        pdoc.name(name.clone()).ty(ptype.clone()).doc(doc.clone())
+    });
 }
 
 // fn register_rust_method<'lua, T, P>(methods: &mut impl TypedDataMethods<'lua, T>, rust_func : Fn<&Lua, &T, P>) {}
